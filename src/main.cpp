@@ -161,7 +161,6 @@ void loop()
   test++;
 
   String input = SerialUSB.readStringUntil('\n');
-  SerialUSB.println(input);
 
   // digitalWrite(LED1, HIGH);  // turn the LED on (HIGH is the voltage level)
   // digitalWrite(LED0, LOW);   // turn the LED on (HIGH is the voltage level)
