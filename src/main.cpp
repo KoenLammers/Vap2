@@ -82,18 +82,10 @@ void setup()
   stepper.setPinsInverted(false, false, true);
   stepper.enableOutputs();
 
-  Serial.begin(9600, SERIAL_8N1);
-  Serial1.println("Start...");
   analogReadResolution(12);
 
-  // Uncomment if using FreeRTOS and xTaskCreate
-  // xTaskCreate(
-  //     StopCheck,
-  //     "stopchecker", // Task name
-  //     1024,       // Stack size
-  //     NULL,       // Task parameters
-  //     1,          // Task Priority
-  //     NULL); 
+  SerialUSB.begin(9600);
+  Serial.begin(9600, SERIAL_8N1);
 }
 
 void StopCheck(void *arg){
@@ -132,35 +124,32 @@ int32_t cal_temperature(uint32_t adc_in)
 
 void loop()
 {
-  
-  Serial.begin(9600, SERIAL_8N1);
+  Serial.println("TS1:200");
   test++;
 
-  // String input = Serial1.readStringUntil('\n');
-  // Serial5.println("TS1:00");
-  // Serial1.println("TS1:300");
-  digitalWrite(LED1, HIGH);
-  delay(100);
-   Serial.println("TS1:305363565360\n");
-   digitalWrite(LED1, LOW);
-   delay(100);
-  // String serialstring = Serial1.readString();
-  // if (serialstring == "MOT_UP")
-  // {
-  //       // Blink LED0 and LED1 for visual indication
-  //   digitalWrite(LED1, HIGH);
-  // }
-  //   if (serialstring == "MOT_DOWN")
-  // {
-  //       // Blink LED0 and LED1 for visual indication
-  //   digitalWrite(LED1, LOW);
-  // }
+  String input = Serial.readStringUntil('\n');
+  // digitalWrite(LED1, HIGH);
+  //  digitalWrite(LED1, LOW);
+
+  SerialUSB.println(input);
+  if (input.startsWith("M:UP"))
+  {
+        // Blink LED0 and LED1 for visual indication
+    digitalWrite(LED1, HIGH);
+    SerialUSB.println("LED HGIGHHGHGHGHHG");
+  }
+    if (input.startsWith("M:DOWN"))
+  {
+        // Blink LED0 and LED1 for visual indication
+    digitalWrite(LED1, LOW);
+    SerialUSB.println("LED LOWWWWW");
+  }
     // digitalWrite(LED0, HIGH);
     // delay(500);  // Wait half a second
     // digitalWrite(LED0, LOW);
     // delay(500);  // Wait half a second
   
-  // delay(500);
+  delay(100);
 
   // if ((input == "MOT_UP" && digitalRead(END_A) == false) || (input == "MOT_UP" && (digitalRead(END_B) && digitalRead(END_A)) == true))
   // {
