@@ -109,19 +109,23 @@ void StopCheck(void *arg)
   }
 }
 
-int32_t cal_temperature(uint32_t adc_in)
-{
-  adc_in -= 14;                      // if no voltage applied to input have has some small baseline of 14
-  adc_in = adc_in * 104000 / 100000; // add 4%
+// int32_t cal_temperature( uint32_t adc_in)
+// {
+//    adc_in -= 14;  // if no voltage applied to input have has some small baseline of 14
+//    adc_in = adc_in*104000/100000; // add 4%
 
-  int32_t result = (adc_in * adc_in) / 39011; //   0,00002563354x^2
-  result += (adc_in * 111586) / 1000000;      // + 0,1115863x
-  result -= 204;                              // - 204,183
-  return result;
-}
+//    int32_t result = (adc_in*adc_in)/39011;  //   0,00002563354x^2
+//    result += (adc_in*111586)/1000000;       // + 0,1115863x
+//   //  result -= 204;                           // - 204,183
+//    return result;
+// }
 
 void loop()
 {
+  SerialUSB.println("TS1:" + (String)analogRead(TEMP1));
+  SerialUSB.println("TS2:" + (String)cal_temperature(analogRead(TEMP1)));
+  Serial.println("TS2:" + cal_temperature(analogRead(TEMP2)));
+  Serial.println("TS3:100");
 
   digitalWrite(LED0, HIGH);
 
