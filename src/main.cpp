@@ -193,22 +193,20 @@ void loop()
         Serial.println("moving midle");
         bool positionKnown = false;
 
-        // Check the endstops to determine if the position is known
         if (digitalRead(END_A) == LOW)
         {
-          stepper.setCurrentPosition(0); // Endstop A is the reference for position 0
+          stepper.setCurrentPosition(0);
           positionKnown = true;
         }
         else if (digitalRead(END_B) == LOW)
         {
-          stepper.setCurrentPosition(MOVERANGE); // Endstop B is the reference for position 1000
+          stepper.setCurrentPosition(MOVERANGE);
           positionKnown = true;
         }
 
-        // If the position is not known, move up to find the endstop
         if (!positionKnown)
         {
-          stepper.move(MOVERANGE); // Move up 1000 units
+          stepper.move(MOVERANGE);
           stepper.enableOutputs();
           while (stepper.run())
           {
