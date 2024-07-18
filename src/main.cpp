@@ -37,7 +37,8 @@
 
 #define R_SENSE 0.075f // Current sensor resistor value in ohm used on PCB
 
-#define MoveRange 40000
+#define MOVERANGE 40000
+#define ENDSTOPRANGE 1000
 
 uint8_t test;
 
@@ -96,18 +97,13 @@ void StopCheck(void *arg)
   Serial.println("STOPTASK test");
   for (;;)
   {
-    digitalWrite(LED1, HIGH); // turn the LED on (HIGH is the voltage level)
-    digitalWrite(LED0, LOW);  // turn the LED on (HIGH is the voltage level)
     Serial.println("STOPTASK RUNNING");
     if (old_End_A != digitalRead(END_A) && digitalRead(END_A) == 0 || old_End_B != digitalRead(END_B) && digitalRead(END_B))
     {
       Serial.println("STOP");
       stepper.stop();
     }
-
-    delay(10);                // wait for a second
-    digitalWrite(LED1, LOW);  // turn the LED off by making the voltage LOW
-    digitalWrite(LED0, HIGH); // turn the LED off by making the voltage LOW
+    // wait for a second
     old_End_A = digitalRead(END_A);
     old_End_B = digitalRead(END_B);
   }
@@ -143,14 +139,14 @@ void loop()
         Serial.println("moving up");
         stepper.setCurrentPosition(0);
         stepper.disableOutputs();
-        stepper.move(100); // Move 100mm
+        stepper.move(ENDSTOPRANGE); // Move 100mm
         stepper.enableOutputs();
         while (stepper.run())
         {
           ;
         }
         stepper.disableOutputs();
-        stepper.move(MoveRange);
+        stepper.move(MOVERANGE);
         stepper.enableOutputs();
         while (stepper.run())
         {
@@ -169,7 +165,7 @@ void loop()
         stepper.setCurrentPosition(0);
         Serial.println("moving down");
         stepper.disableOutputs();
-        stepper.move(-1000);
+        stepper.move(ENDSTOPRANGE * -1);
         stepper.enableOutputs();
         while (stepper.run())
         {
@@ -177,7 +173,7 @@ void loop()
         }
 
         stepper.disableOutputs();
-        stepper.moveTo(MoveRange * -1);
+        stepper.moveTo(MOVERANGE * -1);
         stepper.enableOutputs();
         while (stepper.run())
         {
@@ -205,14 +201,14 @@ void loop()
         }
         else if (digitalRead(END_B) == LOW)
         {
-          stepper.setCurrentPosition(1000); // Endstop B is the reference for position 1000
+          stepper.setCurrentPosition(MOVERANGE); // Endstop B is the reference for position 1000
           positionKnown = true;
         }
 
         // If the position is not known, move up to find the endstop
         if (!positionKnown)
         {
-          stepper.move(MoveRange); // Move up 1000 units
+          stepper.move(MOVERANGE); // Move up 1000 units
           stepper.enableOutputs();
           while (stepper.run())
           {
@@ -227,12 +223,21 @@ void loop()
           stepper.disableOutputs();
         }
 
-        // Now move to the middle position (500 units)
-        stepper.moveTo(MoveRange / 2);
+        stepper.moveTo(MOVERANGE / 2);
         stepper.enableOutputs();
+
+        bool atEndstop = (digitalRead(END_A) == LOW || digitalRead(END_B) == LOW);
+
+        if (atEndstop)
+        {
+          stepper.move(100);
+          delay(100);
+        }
+
         while (stepper.run())
         {
-          Serial.println("moving to middle");
+          Serial.println("Moving to middle");
+
           if (digitalRead(END_A) == LOW || digitalRead(END_B) == LOW)
           {
             Serial.println("End switch triggered, stopping motor");
@@ -241,17 +246,19 @@ void loop()
           }
         }
         stepper.disableOutputs();
-        digitalWrite(LED1, LOW); // Indicate completion
+        digitalWrite(LED1, LOW);
       }
 
       else
       {
         Serial.println("E:Can't parse 'M'command: " + input);
+        SerialUSB.println("E:Can't parse 'M'command: " + input);
       }
       break;
 
     default:
       Serial.println("E:Can't parse message: " + input);
+      SerialUSB.println("E:Can't parse message: " + input);
       break;
     }
   }
